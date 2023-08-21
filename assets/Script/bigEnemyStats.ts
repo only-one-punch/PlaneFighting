@@ -4,7 +4,7 @@ const { ccclass, property } = _decorator;
 @ccclass('enemyStats')
 export class bigEnemyStats extends Component {
     public health : number = 7;
-    public speed : number = 0.07;
+    public speed : number = 6;
     public enemyName : string = "bigEnemy";
 }
 

@@ -4,9 +4,9 @@ const { ccclass, property } = _decorator;
 @ccclass('bigEnemyDie')
 export class bigEnemyDie extends Component {
     //模拟重力 下沉
-    public mass = 0.05;
+    public mass = 3;
     //横移
-    public moveDown = 0.15;
+    public moveDown = 10;
     //音效播放时间
     public musicTime = 0
 
@@ -23,7 +23,7 @@ export class bigEnemyDie extends Component {
     update(deltaTime: number) { 
         this.musicTime += deltaTime;
         const enemyPosition = this.node.getPosition();       
-        this.node.setPosition(enemyPosition.x - this.moveDown,enemyPosition.y - this.mass,enemyPosition.z);
+        this.node.setPosition(enemyPosition.x - this.moveDown * deltaTime,enemyPosition.y - this.mass * deltaTime,enemyPosition.z);
         if(this.node.position.y < 0 && this.musicTime>1){
             this.node.destroy();
             this.musicTime = 0;

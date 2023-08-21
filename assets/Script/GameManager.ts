@@ -1,10 +1,11 @@
-import { _decorator, AudioSource, Component, instantiate, Material, MeshRenderer, Node, Prefab, Vec3 } from 'cc';
+import { _decorator, Animation, AudioSource, Component, director, instantiate, Material, MeshRenderer, Node, Prefab, Scene, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 import { middleEnemyStats } from './middleEnemyStats';
 import { enemyManager } from './enemyManager';
 import { bigEnemyStats } from './bigEnemyStats';
 import { smallEnemyStats } from './smallEnemyStats';
 import { bigEnemyDie } from './bigEnemyDie';
+import { BossControl } from './BossControl';
 @ccclass('GameManager')
 export class GameManager extends Component {
     // 获取飞机组件
@@ -20,7 +21,7 @@ export class GameManager extends Component {
     public middleEnemy : Prefab | null = null;
     @property({type:Prefab})
     public bigEnemy : Prefab | null = null ; 
-
+    
 
     //创建子弹所需要的一系列的参数
     //发射时间
@@ -62,16 +63,50 @@ export class GameManager extends Component {
     //敌机受伤材质
     @property ({type:Material})
     public collisionMaterial: Material | null = null;
+
+    //创造中型机飞行阵型
+    @property({type: Prefab})
+    public middlePlaneFormation01 : Prefab | null = null;
+    //阵型出现的时间
+    public formation01Time: number = 5;
+    public curFormation01Time: number = 0;
+    public formation02Time: number = 7;
+    public curFormation02Time: number = 0;
+    //加入阵型的数组
+    public formation01Nodes:Node[] = [];
+    public formation02Nodes:Node[] = [];
+
+    //清理屏幕需要的参数
+    public curClearnTime = 0;
+    public clearnTime = 10;
+
+    //创造Boss
+    @property({type:Prefab})
+    public bossNode : Prefab | null =null;
+    public curBossTime: number = 0;
+    public bossTime: number = 3;
+    public bossHasCreate: boolean = false;
+    public bossSpeed = 0.03;
+    public boss:any;
+    
+
+    //控制UI的
+    @property({type:Node})
+    public startMenu: Node | null = null;
+    //控制动画
+    @property({type:Animation})
+    public bossDie :Animation | null = null;
     start() {
         
     }
 
     update(deltaTime: number) {
-        
+       
         this.curTime += deltaTime;
+        
         if(this.curTime > this.shootTime){          
                 this.createBullet();
-                this.curTime = 0;            
+                this.curTime = 0;           
         }
         //超过屏幕自动销毁节点
         for (const node of this.bulletNodes) {
@@ -79,10 +114,39 @@ export class GameManager extends Component {
                 this.decoveryBullet(node)
             }
         }
+        for(const node of this.smallEnemyNodes){
+            if(node.position.x < -10){
+                node.destroy()
+                this.smallEnemyNodes.splice(this.smallEnemyNodes.indexOf(node),1)
+            }
+        }
+        for(const node of this.middleEnemyNodes){
+            if(node.position.x < -10){
+                node.destroy()
+                this.middleEnemyNodes.splice(this.middleEnemyNodes.indexOf(node),1)
+            }
+        }
+        for(const node of this.bigEnemyNodes){
+            if(node.position.x < -10){
+                node.destroy()
+                this.bigEnemyNodes.splice(this.bigEnemyNodes.indexOf(node),1)
+            }
+        }
         // 创造飞机
-        this.enemyCurTime += deltaTime;
-        this.enemyCurTime2 += deltaTime;
-        this.enemyCurTime3 += deltaTime;
+        
+        if(this.bossHasCreate == false){
+            this.enemyCurTime += deltaTime;
+            this.enemyCurTime2 += deltaTime;
+            this.enemyCurTime3 += deltaTime;
+            this.curFormation01Time += deltaTime;
+            this.curFormation02Time += deltaTime;
+        }else{
+            this.enemyCurTime = 0
+            this.enemyCurTime2 = 0
+            this.enemyCurTime3 = 0
+            this.curFormation01Time = 0;
+            this.curFormation02Time = 0;
+        }
         if(this.enemyCurTime > this.createEnemyTime){
             this.createEnemyPlane(this.smallEnemy);
             this.enemyCurTime = 0;
@@ -96,11 +160,66 @@ export class GameManager extends Component {
             this.enemyCurTime3 = 0;
             // this.audioButton()
         }
+
+        //创造飞机阵型01
         
+        if(this.curFormation01Time > this.formation01Time){
+            this.createMiddlePlaneFormation01()
+            console.log("has create 01")
+            this.curFormation01Time = 0;
+        }        
+        this.formation01Nodes.forEach((ele) => {
+            if(ele.children !==null){
+                const pos = ele.getPosition();
+                pos.x -=5*deltaTime;
+                pos.z +=3*deltaTime;
+                ele.setPosition(pos.x,pos.y,pos.z);
+            }
+           
+        })
+        //飞机阵型 02
+        
+        if(this.curFormation02Time > this.formation02Time){
+            this.createMiddlePlaneFormation02()
+            console.log("has create 02")
+            this.curFormation02Time = 0;
+        }        
+        this.formation02Nodes.forEach((ele) => {
+            if(ele.children !==null){
+                 const pos = ele.getPosition();
+                pos.x -=5*deltaTime;
+                pos.z -=6*deltaTime;
+                ele.setPosition(pos.x,pos.y,pos.z);  
+            }
+                  
+        })
+
+        //创造Boss
+        this.curBossTime += deltaTime;
+        if(this.curBossTime > this.bossTime){
+            this.createBoss();
+            this.curBossTime = -9999;
+            this.bossHasCreate = true;
+            console.log(this.bossNode.data.children)
+        }
+
         //处理碰撞
         this.ProcessCollision();
+        if(this.bossHasCreate){
+            
+            this.bossCollision()
+        }
+        
+        //boss移动
+        // this.bossMove()
+        //clearn srceen
 
-
+        // this.curClearnTime += deltaTime;
+        // if(this.curClearnTime > this.clearnTime){
+        //     this.clearScreen()
+        //     this.curClearnTime = 0 ;
+        // }
+        
     }
 
     public createBullet(){
@@ -126,24 +245,20 @@ export class GameManager extends Component {
         const smallEnemy = enemyNode.getComponent(smallEnemyStats);
         if(middleEnemy){
             const middleSpeed = enemyNode.getComponent(enemyManager)
-            middleSpeed.moveLength = middleEnemy.speed;
+            middleSpeed.middleMoveLength= middleEnemy.speed;
             this.middleEnemyNodes.push(enemyNode);
         }
         if(bigEnemy){
             const bigSpeed = enemyNode.getComponent(enemyManager)
-            bigSpeed.moveLength = bigEnemy.speed;
+            bigSpeed.bigMoveLength = bigEnemy.speed;
             this.bigEnemyNodes.push(enemyNode)
         }
         if(smallEnemy){
             const smallSpeed = enemyNode.getComponent(enemyManager);
-            smallSpeed.moveLength = smallEnemy.speed;
+            smallSpeed.smallMoveLength = smallEnemy.speed;
             this.smallEnemyNodes.push(enemyNode)
         }
         this.enemyNodes.push()
-        // if(enemyComponentStats.enemyName === "bigEnemy"){
-        //     this.bigEnemyNodes.push(enemyNode)
-        //     console.log(enemyComponentStats)
-        // }
         this.node.addChild(enemyNode);
         const inceptionPosition = new Vec3();
         inceptionPosition.x = 40;
@@ -151,7 +266,44 @@ export class GameManager extends Component {
         inceptionPosition.z = Math.floor(Math.random()*20 - 10);
         enemyNode.setPosition(inceptionPosition)
     }
+    public createMiddlePlaneFormation01(){
+        // const formation01 = instantiate(this.middlePlaneFormation01);
+        // // console.log(formation01.children)
 
+        // formation01.children.forEach((ele)=>{
+        //     this.middleEnemyNodes.push(ele);
+        // })
+        // // console.log(this.middleEnemyNodes)
+        // this.node.addChild(formation01);
+        // formation01.setPosition(40,0,-13);
+
+        // this.scheduleOnce(()=>{
+        //     formation01.destroy();
+        //     formation01.children.forEach((ele)=>{
+        //         this.middleEnemyNodes.splice(this.middleEnemyNodes.indexOf(ele),1)
+        //     })
+        // },3000);
+        const startPos = new Vec3(40,1,0);
+        for(let row = 0; row < 5 ; row ++){
+            const enemyNode = instantiate(this.middleEnemy);
+            this.node.addChild(enemyNode);
+            const position = new Vec3(startPos.x + 2*row,startPos.y,startPos.z - 2*row);
+            enemyNode.setPosition(position);
+            this.middleEnemyNodes.push(enemyNode);
+            this.formation01Nodes.push(enemyNode);
+        }
+    } 
+    public createMiddlePlaneFormation02(){
+        const startPos = new Vec3(40,1,12);
+        for(let row = 0; row < 5 ; row ++){
+            const enemyNode = instantiate(this.middleEnemy);
+            this.node.addChild(enemyNode);
+            const position = new Vec3(startPos.x + 2*row,startPos.y,startPos.z + 2*row);
+            enemyNode.setPosition(position);
+            this.middleEnemyNodes.push(enemyNode);
+            this.formation02Nodes.push(enemyNode);
+        }
+    } 
     public ProcessCollision(){
         for(const bullet of this.bulletNodes){
             const bulletPosition = bullet.getPosition();
@@ -178,6 +330,10 @@ export class GameManager extends Component {
                 const distanceOfX = bulletPosition.x - enemyPosition.x;
                 const distanceOfZ = bulletPosition.z - enemyPosition.z;
                 const distance = distanceOfX * distanceOfX + distanceOfZ * distanceOfZ;
+                if(enemy.name == "middleEnemy-002"){
+                    console.log(enemy.name,enemy.position)
+                }
+                    
                 if(distance < 0.65*0.65){
                     const enemyHp = enemy.getComponent(middleEnemyStats);
                     enemyHp.health -= 1;
@@ -185,28 +341,19 @@ export class GameManager extends Component {
                         //发生碰撞后改变颜色
                     const enemyMeshRender = enemy.getComponent(MeshRenderer);
                     enemyMeshRender.setMaterial(this.collisionMaterial,0)
-                    this.scheduleOnce(()=>{
-                        enemyMeshRender.setMaterial(this.standardMaterial,0)
-                    },0.1)
                         //播放碰撞音效
                     const collisionAudio = enemy.getComponent(AudioSource);
                     collisionAudio.play();
                     }
                     //死亡事件
-                    if(enemyHp.health <= 0){
+                    if(enemyHp.health == 0){
                         //如果死亡，直接变色
                         const enemyMeshRender = enemy.getComponent(MeshRenderer);
                         enemyMeshRender.setMaterial(this.collisionMaterial,0)
-                       setInterval(()=>{
-                        if(enemy){
-                            this.goDie(enemy)
-                        }
-                       },60)
-                       if(enemy.position.y < 0){
                         enemy.destroy();
-                       }
-                         
-                    this.middleEnemyNodes.splice(this.middleEnemyNodes.indexOf(enemy),1);
+                        // this.formation01Nodes.splice(this.formation01Nodes.indexOf(enemy),1);
+                        // this.formation02Nodes.splice(this.formation02Nodes.indexOf(enemy),1);
+                        this.middleEnemyNodes.splice(this.middleEnemyNodes.indexOf(enemy),1);
                     }
                     bullet.destroy();
                     this.bulletNodes.splice(this.bulletNodes.indexOf(bullet),1)
@@ -226,7 +373,8 @@ export class GameManager extends Component {
                     const enemyMeshRender = enemy.getComponent(MeshRenderer);
                     enemyMeshRender.setMaterial(this.collisionMaterial,0)
                     this.scheduleOnce(()=>{
-                        enemyMeshRender.setMaterial(this.standardMaterial,0)
+                            enemyMeshRender.setMaterial(this.standardMaterial,0)
+                                               
                     },0.05) 
                         //播放碰撞音效
                     const collisionAudio = enemy.getComponent(AudioSource);
@@ -250,13 +398,128 @@ export class GameManager extends Component {
             }
         }
     }
+    public clearScreen(){   
+        this.middleEnemyNodes.forEach((enemy)=>{
+            enemy.destroy();    
+            this.middleEnemyNodes = [];
+        })
+        this.smallEnemyNodes.forEach((enemy)=>{
+            enemy.destroy();
+            this.smallEnemyNodes = [];
+        })
+        this.bigEnemyNodes.forEach((enemy)=>{
+            enemy.destroy();
+            this.bigEnemyNodes = [];
+        })
+    }
+    public createBoss(){
+        // this.clearScreen();
+        this.bossHasCreate = true;
+        this.boss = instantiate(this.bossNode);
+        this.node.addChild(this.boss);
+        this.boss.setPosition(40,1,0)
+        console.log("has create boss")
+    }
+    // bossMove(){
+    //     this.bossNode.data.children.forEach((boss)=>{
+    //         const pos = boss.getPosition();
+    //         pos.z += this.bossSpeed
+    //         if (pos.z > 7 || pos.z < -7) {
+    //             this.bossSpeed = -this.bossSpeed;
+    //         }
+    //         boss.setPosition(pos);
+    //         // console.log(boss.position)
+    //     })
+        
+    // }
+    public bossCollision(){
+        this.bulletNodes.forEach((bullet)=>{
+            const bulletPos = bullet.getPosition();
+            
+            const bossChildren = this.bossNode.data.children;
+            const bossPos = this.boss.position;
+            // console.log(bossPos)
+            // bossPos  再z(-4,4)这个区间；
+            if(bossPos == null) return
+            const minZ = bossPos.z - 4;
+            const maxZ = bossPos.z + 4;
+            const bossStats = this.boss.getComponent(BossControl);
+            if(bulletPos.x - bossPos.x >0){
+                
+                if(bulletPos.z >minZ && bulletPos.z < maxZ){
+            //    console.log("发生碰撞")
 
-    public  goDie(dieEnemy:Node){
-        const pos = dieEnemy.position;
-        const movePos = pos.x -this.moveX;
-        const moveDown = pos.y -this.mass;
-        dieEnemy.setPosition(movePos,moveDown,pos.z);
+              
+           }
+           }
+
+            this.boss.children.forEach((bossChidren)=>{
+                if(bossChidren.name !== "BossBullet"){
+                    this.bulletNodes.forEach(bullet => {
+                    const distanceX = bossChidren.worldPosition.x - bullet.worldPosition.x;
+                    const distanceZ = bossChidren.worldPosition.z - bullet.worldPosition.z;
+
+                    const radiusDistance = 0.65;
+                    if((distanceX * distanceX + distanceZ * distanceZ) < radiusDistance * radiusDistance){
+                        // console.log("发生碰撞 ：新方法");z
+                        
+                        bullet.destroy()
+                        this.bulletNodes.splice(this.bulletNodes.indexOf(bullet),1);
+        
+                        //减少boss血量，产生boss被打击的音效，改变boss的颜色  
+                        bossStats.bossHP --;
+                        console.log(bossStats.bossHP);
+                        const collisionAudio = this.boss.getComponent(AudioSource);
+                        // console.log(collisionAudio)
+                        collisionAudio.play();
+        
+                        if(bossStats.bossHP == 0){
+                            const dieMusic = this.boss.getComponent(BossControl).audioSource2;
+                            bossStats.bossSkill = false
+                            dieMusic.play()
+                            // this.bossDie.play();
+                            setTimeout(()=>{
+                                console.log("die?")
+                                this.boss.destroy()
+                            },2000)
+                        }
+                    }
+                    
+                })
+                }             
+            })
+            
+        
+           
+            // bossChildren.forEach((boss)=>{
+            //     const bossPos = boss.getPosition();
+            //     // console.log(bossChildren[1].getPosition())
+            //     const X = bulletPos.x - 30 - bossPos.x;
+            //     const Z = bulletPos.z - bossPos.z;
+            //     const distance = X*X+Z*Z;
+            //     // console.log(distance)
+            //     if(distance <1){
+            //         console.log("has conclusion boss")
+
+            //         bullet.destroy()
+            //         this.bulletNodes.splice(this.bulletNodes.indexOf(bullet),1);
+            //     }
+            // })
+        })
+    }
+
+    public controlUI(){
+        this.startMenu.active = false;
+        //获取当前场景的名字
+    }
+    public reStart(){
+            const scene = director.getScene().name;
+            director.loadScene(scene);
+            // director.pause()
+            // if(director.isPaused){
+            //     director.resume
+            // }
     }
 }
 
-
+    

@@ -3,7 +3,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('BulletControl')
 export class BulletControl extends Component {
-    public moveLength: number = 0.2;
+    public moveLength: number = 15;
 
     start() {
         const audio = this.node.getComponent(AudioSource)
@@ -12,7 +12,7 @@ export class BulletControl extends Component {
 
     update(deltaTime: number) {
         const pos  = this.node.position;
-        const movePos = pos.x + this.moveLength;
+        const movePos = pos.x + this.moveLength * deltaTime;
         this.node.setPosition(movePos,pos.y,pos.z);
     }
 }
