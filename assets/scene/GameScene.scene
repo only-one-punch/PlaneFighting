@@ -11,7 +11,7 @@
   },
   {
     "__type__": "cc.Scene",
-    "_name": "MainScene",
+    "_name": "GameScene",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -33,12 +33,15 @@
       },
       {
         "__id__": 29
+      },
+      {
+        "__id__": 37
       }
     ],
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 37
+      "__id__": 48
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -69,7 +72,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 40
+      "__id__": 49
     },
     "_id": "9bd14ef5-22c1-4aea-88c4-a11d55e557ec"
   },
@@ -670,8 +673,16 @@
       "__uuid__": "63bdf2fc-47bc-4c48-8726-0a0ba3db6442",
       "__expectedType__": "cc.Prefab"
     },
+    "bossBullet": {
+      "__uuid__": "b4c1ee77-abb1-4728-be76-ce917e9413cd",
+      "__expectedType__": "cc.Prefab"
+    },
     "startMenu": null,
     "bossDie": null,
+    "diePlayerPrefab": {
+      "__uuid__": "015c18ee-e9a0-4baf-b5a0-edab0ba0b695",
+      "__expectedType__": "cc.Prefab"
+    },
     "_id": "26QJ73prdAr7vkFShxO2/3"
   },
   {
@@ -809,67 +820,203 @@
     }
   },
   {
+    "__type__": "cc.Node",
+    "_objFlags": 0,
+    "_parent": {
+      "__id__": 1
+    },
+    "_prefab": {
+      "__id__": 38
+    },
+    "__editorExtras__": {}
+  },
+  {
     "__type__": "cc.PrefabInfo",
-    "root": null,
+    "root": {
+      "__id__": 37
+    },
+    "asset": {
+      "__uuid__": "015c18ee-e9a0-4baf-b5a0-edab0ba0b695",
+      "__expectedType__": "cc.Prefab"
+    },
+    "fileId": "ffoq/9/jVHyKvyn9ukOodx",
+    "instance": {
+      "__id__": 39
+    },
+    "targetOverrides": null,
+    "nestedPrefabInstanceRoots": null
+  },
+  {
+    "__type__": "cc.PrefabInstance",
+    "fileId": "f3b6IzqWtD8apGiMDU/aop",
+    "prefabRootNode": null,
+    "mountedChildren": [],
+    "mountedComponents": [
+      {
+        "__id__": 40
+      }
+    ],
+    "propertyOverrides": [
+      {
+        "__id__": 43
+      },
+      {
+        "__id__": 45
+      },
+      {
+        "__id__": 46
+      },
+      {
+        "__id__": 47
+      }
+    ],
+    "removedComponents": []
+  },
+  {
+    "__type__": "cc.MountedComponentsInfo",
+    "targetInfo": {
+      "__id__": 41
+    },
+    "components": [
+      {
+        "__id__": 42
+      }
+    ]
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "ffoq/9/jVHyKvyn9ukOodx"
+    ]
+  },
+  {
+    "__type__": "cc.AudioSource",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {
+      "mountedRoot": {
+        "__id__": 37
+      }
+    },
+    "node": {
+      "__id__": 37
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "_clip": {
+      "__uuid__": "906b445f-35bb-4300-84d3-294226d34cd7",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "_loop": false,
+    "_playOnAwake": true,
+    "_volume": 1,
+    "_id": "acIqoV6ZVATbvFW70yH/Ex"
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 44
+    },
+    "propertyPath": [
+      "_name"
+    ],
+    "value": "DieMyPlane"
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "ffoq/9/jVHyKvyn9ukOodx"
+    ]
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 44
+    },
+    "propertyPath": [
+      "_lpos"
+    ],
+    "value": {
+      "__type__": "cc.Vec3",
+      "x": -0.135,
+      "y": 1,
+      "z": -19.145
+    }
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 44
+    },
+    "propertyPath": [
+      "_lrot"
+    ],
+    "value": {
+      "__type__": "cc.Quat",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "w": 1
+    }
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 44
+    },
+    "propertyPath": [
+      "_euler"
+    ],
+    "value": {
+      "__type__": "cc.Vec3",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "__type__": "cc.PrefabInfo",
+    "root": {
+      "__id__": 1
+    },
     "asset": null,
     "fileId": "9bd14ef5-22c1-4aea-88c4-a11d55e557ec",
     "instance": null,
-    "targetOverrides": [
-      {
-        "__id__": 38
-      }
-    ],
+    "targetOverrides": null,
     "nestedPrefabInstanceRoots": [
       {
         "__id__": 7
       },
       {
         "__id__": 29
+      },
+      {
+        "__id__": 37
       }
-    ]
-  },
-  {
-    "__type__": "cc.TargetOverrideInfo",
-    "source": {
-      "__id__": 27
-    },
-    "sourceInfo": null,
-    "propertyPath": [
-      "bossDie"
-    ],
-    "target": null,
-    "targetInfo": {
-      "__id__": 39
-    }
-  },
-  {
-    "__type__": "cc.TargetInfo",
-    "localID": [
-      "848Lx3l+NDRI6nfaByAwYU"
     ]
   },
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 41
+      "__id__": 50
     },
     "shadows": {
-      "__id__": 42
+      "__id__": 51
     },
     "_skybox": {
-      "__id__": 43
+      "__id__": 52
     },
     "fog": {
-      "__id__": 44
+      "__id__": 53
     },
     "octree": {
-      "__id__": 45
+      "__id__": 54
     },
     "skin": {
-      "__id__": 46
+      "__id__": 55
     },
     "lightProbeInfo": {
-      "__id__": 47
+      "__id__": 56
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

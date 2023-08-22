@@ -1,4 +1,5 @@
 import { _decorator, Animation, AudioSource, Component, instantiate, Node, Prefab, Vec3 } from 'cc';
+import { GameManager } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BossControl')
@@ -6,10 +7,8 @@ export class BossControl extends Component {
     @property({type:Prefab})
     public bossBullet :Prefab | null = null
     public firstBulletPosition: Vec3 ;
-    public bulletCreateTime: number = 0.7
-    public curCreateTime : number = 0
     public bossHP = 40;
-    public bossSpeed = 3;
+    public bossSpeed = 5;
     public bossSkill : boolean = true;
     public bossSkillTime: number = 0;
     public bossPos :Vec3;
@@ -21,6 +20,8 @@ export class BossControl extends Component {
     public audioSource2: AudioSource | null = null;
     @property({ type: Animation })
     public dieAinmation: Animation | null = null;
+    @property({type:GameManager})
+    public gameManager : GameManager | null = null;
     start() {
         console.log(this.audioSource)
         
@@ -33,20 +34,7 @@ export class BossControl extends Component {
                   this.bossMoveX(deltaTime);
             }
           
-            // this.bossSkillTime += deltaTime;
-                // if(this.bossSkillTime > 5){
-            if(this.bossSkill){
-                 this.curCreateTime += deltaTime;
-                //     console.log(this.curCreateTime)
-                if(this.curCreateTime > this.bulletCreateTime){
-                this.bossBulletCreate();
-                this.curCreateTime = 0 ;
-                console.log("time")
-                // }
-            this.bossSkillTime = 0
-            }
-                   
-            }
+
             
             if(this.bossHP == 0){
                 this.bossSkill = false;
@@ -89,16 +77,26 @@ export class BossControl extends Component {
         }
         this.node.setPosition(pos)
     }
-    bossBulletCreate(){
-        this.firstBulletPosition = this.node.children[5].getPosition();
-        for(let i = 0; i < 9 ; i+=2){
-            const bossBulletNode = instantiate(this.bossBullet); 
-            this.node.addChild(bossBulletNode);
-            const bossBulletNodePos = this.firstBulletPosition.z + i;
-            bossBulletNode.setPosition(this.firstBulletPosition.x,this.firstBulletPosition.y,bossBulletNodePos);
-            this.bossBulletNode.push(bossBulletNode);
-        }
-    }
+    //创建子弹并给初始位置
+    // bossBulletCreate(){
+    //     console.log(this.node.parent)
+    //     this.firstBulletPosition = this.node.children[5].getWorldPosition();
+    //     for(let i = 0; i < 9 ; i+=2){
+    //         const bossBulletNode = instantiate(this.bossBullet); 
+    //         this.node.addChild(bossBulletNode);
+    //         const bossBulletNodePos = this.firstBulletPosition.z + i;
+    //         bossBulletNode.setWorldPosition(this.firstBulletPosition.x,this.firstBulletPosition.y,bossBulletNodePos);
+    //         this.bossBulletNode.push(bossBulletNode);
+    //     }
+    // }
 }
 
-
+/*
+    第一个问题，怎样解决子弹不会随着飞机的位置移动而移动。
+    是不是因为我的子弹节点是属于飞机的，飞机移动子节点也会跟着移动。
+    那是不是可以通过设置世界坐标？
+    
+    答：解决了，出现问题的原因是，子节点会随着父节点的移动而移动，
+    我想到的办法是，把子弹节点创建在游戏场景节点下而不是boss节点下，
+    这一即使是boss节点移动，被创造出来的子弹节点也不会移动。
+*/

@@ -1,4 +1,4 @@
-import { _decorator, cclegacy, Vec3, Component, EventKeyboard, Input, input, KeyCode, Node, view } from 'cc';
+import { _decorator, cclegacy, Vec3, Component, EventKeyboard, Input, input, KeyCode, Node, view, Prefab, MeshRenderer, Material, System, EventTouch } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerController')
@@ -21,14 +21,33 @@ export class PlayerController extends Component {
     //目标位置
     private _targetPos: Vec3 = new Vec3();
 
+
+    public playerHp:number = 4;
+    
+    private meshRender:MeshRenderer | null = null; 
     start() {
         input.on(Input.EventType.KEY_DOWN,this.onKeyDown,this);
         input.on(Input.EventType.KEY_UP,this.onKeyUp,this);
-        // let a = new Vec3(1,0,0);
-        // console.log(a.x*2)
+        this.meshRender = this.node.children[0].getComponent(MeshRenderer);
+        console.log( this.meshRender.getRenderMaterial(1));
+        //开始监听触摸事件
+        input.on(Input.EventType.TOUCH_START,this.onTouchStart,this);
+        input.on(Input.EventType.TOUCH_MOVE,this.onTouchMove,this);
     }
+    onTouchStart(touch:EventTouch){
 
+    };
+    public deltatime:number = 0;
+    onTouchMove(touch:EventTouch){
+    console.log(touch.getDeltaX(),touch.getDeltaY())
+    const planePos = this.node.getPosition();
+    console.log(planePos)
+    const newPosX = planePos.x + touch.getDeltaY()*this.deltatime*1.2;
+    const newPosZ = planePos.z + touch.getDeltaX()*this.deltatime*1.2; 
+    this.node.setPosition(newPosX,planePos.y,newPosZ)
+    };
     update(deltaTime: number) {
+        this.deltatime = deltaTime;
         //需要随时判断其是否触碰边界，所以应该在这里调用范围函数
         this.checkPlaneRadius();
 
@@ -130,6 +149,7 @@ export class PlayerController extends Component {
         this._moveDistance = 10;
     }
 
+    
     //要限制飞机飞行的范围，需要使用this.node， 这个代指挂在脚本的节点
     limitFlightRange(){
         if(this.node.position.z >= 10 || this.node.position.z <= -10){

@@ -6,6 +6,9 @@ const { ccclass, property } = _decorator;
 export class Test extends Component {
    @property(Node)
    uiLevelFailure:Node;
+    start(){ 
+      director.getScene().on("level_failed",this.onEvent_levelFailed,this);
+    }
     update(deltaTime: number) {
         
     }
@@ -14,11 +17,16 @@ export class Test extends Component {
        director.loadScene("GameScene")
     }
     reStart(){
-       director.loadScene(director.getScene().name)
+       director.loadScene(director.getScene().name);
     }
     onBtnMainMenu(){
-      director.loadScene("MainScene")
+      director.loadScene("MainScene");
     }
+    onEvent_levelFailed(){
+      console.log("123");
+      this.uiLevelFailure.active = true;
+    }
+
 }
 
 

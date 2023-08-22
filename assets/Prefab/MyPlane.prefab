@@ -119,6 +119,10 @@
       {
         "__uuid__": "620b6bf3-0369-4560-837f-2a2c00b73c26",
         "__expectedType__": "cc.Material"
+      },
+      {
+        "__uuid__": "9f143724-3bb8-45f9-a7f8-d0ac1e14f13a",
+        "__expectedType__": "cc.Material"
       }
     ],
     "_visFlags": 0,
